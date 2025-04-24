@@ -36,13 +36,13 @@ const TranslationProvider = ({ children, originalLang }) => {
 
     const overrideGoogleTranslateStyles = () => {
         const style = document.body.style;
-        style.position = 'static'; 
-        style.minHeight = '0'; 
-        style.top = '0'; 
+        style.position = 'static';
+        style.minHeight = '0';
+        style.top = '0';
     };
 
 
-    useGoogleTranslateScript(originalLang);  
+    useGoogleTranslateScript(originalLang);
 
     useEffect(() => {
         const observer = new MutationObserver(mutations => {
@@ -96,32 +96,33 @@ const TranslationProvider = ({ children, originalLang }) => {
 
 
     const changeLanguage = (lang) => {
-      
-        
-        
         // deleteCookies
         const hostname = window.location.hostname;
         const parts = hostname.split('.');
-        const topLevel = parts.slice(-2).join('.'); 
-        const subDomains = parts.slice(0, -2); 
+        const topLevel = parts.slice(-2).join('.');
+        const subDomains = parts.slice(0, -2);
         const domains = subDomains.reduce((acc, part, index) => {
             const subDomain = acc[index - 1] ? acc[index - 1] + '.' + part : part + '.' + topLevel;
             acc.push(subDomain);
             return acc;
         }, [topLevel]);
+
+        // Delete cookies for all domains
         domains.forEach(domain => {
-            document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=.${domain}; path=/ `;
-           // setTimeout(()=>{},500)
-            console.log("deleted and set cookie for: ."+domain )
-        document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=${domain}; path=/ `;
+            // Delete with dot prefix
+            document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=.${domain}; path=/; SameSite=None; Secure`;
+            // Delete without dot prefix
+            document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=${domain}; path=/; SameSite=None; Secure`;
         });
-        
-        
-        
-        document.cookie = `googtrans=/auto/${lang}; path=/;`;
-         console.log(" set cookie for: "+hostname )
-        
-        setTimeout(()=> {window.location.reload();},0)
+
+        // Set new cookie with cross-domain attributes
+        document.cookie = `googtrans=/auto/${lang}; path=/; domain=${hostname}; SameSite=None; Secure`;
+        // Also set for root domain with dot prefix for better cross-subdomain compatibility
+        document.cookie = `googtrans=/auto/${lang}; path=/; domain=.${hostname}; SameSite=None; Secure`;
+
+        console.log("Set cookies for:", hostname);
+
+        setTimeout(() => {window.location.reload();}, 0);
     };
 
 
